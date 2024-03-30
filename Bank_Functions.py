@@ -19,7 +19,7 @@ class Bank_Functions:
         self.create_tables()
 
     def create_tables(self): 
-        # Create accounts table if not exists
+        # create accounts table if not exists
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS accounts (
                 account_number INT PRIMARY KEY,
@@ -28,7 +28,7 @@ class Bank_Functions:
             )
         """)
 
-        # Create transactions table if not exists
+        # create transactions table if not exists
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS transactions (
                 transaction_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -44,15 +44,15 @@ class Bank_Functions:
 
     def deposit(self, account_number, amount): 
         try:
-            # Update balance in accounts table
+            # update balance in accounts table
             self.cursor.execute("UPDATE accounts SET balance = balance + %s WHERE account_number = %s", (amount, account_number))
             self.mydb.commit()
 
-            # Get the updated balance
+            # get the updated balance
             self.cursor.execute("SELECT balance FROM accounts WHERE account_number = %s", (account_number,))
             updated_balance = self.cursor.fetchone()[0]
 
-            # Record transaction in transactions table
+            # record transaction in transactions table
             self.record_transaction(account_number, amount, "Deposit", updated_balance)
             print("Amount deposited successfully")
         except mysql.connector.Error as e:
@@ -60,24 +60,24 @@ class Bank_Functions:
 
     def withdraw(self, account_number, account_name, amount):
         try:
-            # Check if account has sufficient balance
+            # check if account has sufficient balance
             self.cursor.execute("SELECT balance FROM accounts WHERE account_number = %s AND account_name = %s", (account_number, account_name))
             balance = self.cursor.fetchone()[0]
             if balance < amount:
                 print("Insufficient balance")
                 return
             
-            # Convert amount to Decimal
+            # convert amount to Decimal
             amount = Decimal(str(amount))
 
-            # Calculate updated balance after withdrawal
+            # calculate updated balance after withdrawal
             updated_balance = balance - amount
 
-            # Update balance in accounts table
+            # update balance in accounts table
             self.cursor.execute("UPDATE accounts SET balance = %s WHERE account_number = %s", (updated_balance, account_number))
             self.mydb.commit()
 
-            # Record transaction in transactions table
+            # record transaction in transactions table
             self.record_transaction(account_number, amount, "Withdrawal", updated_balance)
             print("Amount withdrawn successfully")
         except mysql.connector.Error as e:
@@ -90,14 +90,14 @@ class Bank_Functions:
             if result:
                 return result[0]
             else:
-                return None  # Return None if account not found
+                return None  # return None if account not found
         except mysql.connector.Error as e:
             print("Error:", e)
-            return None  # Return None in case of an error
+            return None  # return None in case of an error
         
     def display_balance(self, account_number):
         try:
-            # Fetch and display balance from accounts table
+            # fetch and display balance from accounts table
             self.cursor.execute("SELECT account_number, account_name, balance FROM accounts WHERE account_number = %s", (account_number,))
             result = self.cursor.fetchone() # displays the balance that came from the database based on the account number that is used 
             if result:
@@ -111,7 +111,7 @@ class Bank_Functions:
         
     def display_transactions(self, account_number): 
         try:
-            # Fetch and display transactions from transactions table
+            # fetch and display transactions from transactions table
             self.cursor.execute("SELECT * FROM transactions WHERE account_number = %s", (account_number,))
             transactions = self.cursor.fetchall()
 
@@ -136,12 +136,12 @@ class Bank_Functions:
 
     def create_account(self, account_number, account_name): # creates an account number and account name to be save to the table in the database
         try:
-            # Check if account already exists
+            # check if account already exists
             self.cursor.execute("SELECT * FROM accounts WHERE account_number = %s", (account_number,))
             if self.cursor.fetchone():
                 raise self.AccountAlreadyExistsError("An account with this account number already exists")
 
-            # Create new account
+            # create new account
             self.cursor.execute("INSERT INTO accounts (account_number, account_name, balance) VALUES (%s, %s, 0)", (account_number, account_name))
             self.mydb.commit()
             print("Account created successfully")
